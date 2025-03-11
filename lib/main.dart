@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// ignore: unused_import
 import 'package:video_player/video_player.dart';
 import 'registerScreen.dart';
 import 'TrainerPage.dart';
@@ -35,10 +34,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    HomeScreen(),
+    const HomeScreen(),
     ClientsPage(),
-    MasterClassPage(),
-    TrainerPage(),
+    const MasterClassPage(),
+    const TrainerPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -67,8 +66,31 @@ class _BottomNavBarState extends State<BottomNavBar> {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset('assets/videos/fitpro.mp4')
+      ..initialize().then((_) {
+        setState(() {}); // Update the UI when the video is loaded
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +166,38 @@ class HomeScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, color: Colors.black87),
             ),
+            const SizedBox(height: 20),
+
+            // Video Player with Play/Pause Buttons
+            if (_controller.value.isInitialized)
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _controller.value.isPlaying
+                          ? Icons.pause_circle
+                          : Icons.play_circle,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _controller.value.isPlaying
+                            ? _controller.pause()
+                            : _controller.play();
+                      });
+                    },
+                  ),
+                ],
+              )
+            else
+              const CircularProgressIndicator(),
+
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
